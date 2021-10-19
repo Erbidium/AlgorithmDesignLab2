@@ -32,10 +32,11 @@ public:
 		std::ifstream dataFile(databaseConfiguration::dataFileName, std::ios_base::binary);
 		dataFile.seekg(blockNumber*databaseConfiguration::blockSizeInBytes);
 		int key;
-		std::string value(databaseConfiguration::dataFieldNumberSymbols, '\0');
-		for(int i=0;i<databaseConfiguration::fieldsNumber;i++)
+		std::string value;
+		for(int i=0;i<databaseConfiguration::blockFieldsNumber;i++)
 		{
 			dataFile.read(reinterpret_cast<char*> (&key), sizeof(key));
+			value=std::string(databaseConfiguration::dataFieldNumberSymbols, '\0');
 			dataFile.read(value.data(), databaseConfiguration::dataFieldNumberSymbols);
 			if(value[0]!='\0')
 			{
@@ -44,6 +45,16 @@ public:
 		}
 		dataFile.close();
 		return fields;
+	}
+
+	static void printBlock(int blockNumber)
+	{
+		auto fields = readBlock(blockNumber);
+		std::cout<<"Block number: "<<blockNumber<< std::endl;
+		for (const auto& field : fields)
+		{
+			std::cout<<"key: "<<" "<<field.first<<" value: "<<field.second<< std::endl;
+		}
 	}
 	static void writeBlock(int blockNumber, const static std::vector<std::pair<int, std::string>>& fields)
 	{
