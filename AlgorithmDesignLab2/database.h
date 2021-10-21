@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 #include "databaseConfiguration.h"
 
@@ -14,7 +15,7 @@ public:
 		std::ofstream indexFile(databaseConfiguration::indexFileName, std::ios::trunc);
 		for(int blockNumber=0;blockNumber<databaseConfiguration::blocksNumber;blockNumber++)
 		{
-			indexFile<<blockNumber<<','<<(databaseConfiguration::keyMaxValue-databaseConfiguration::keyMinValue)/databaseConfiguration::fieldsNumber*(blockNumber)<<'\n';
+			indexFile<<blockNumber<<','<<(databaseConfiguration::keyMaxValue-databaseConfiguration::keyMinValue)/databaseConfiguration::blocksNumber*blockNumber<<'\n';
 		}
 		indexFile.close();
 	}
@@ -49,7 +50,7 @@ public:
 
 	static void printBlock(int blockNumber)
 	{
-		auto fields = readBlock(blockNumber);
+		const auto fields = readBlock(blockNumber);
 		std::cout<<"Block number: "<<blockNumber<< std::endl;
 		for (const auto& field : fields)
 		{
@@ -108,7 +109,7 @@ public:
 
 	static void sortBlock(std::vector<std::pair<int, std::string>>& fields)
 	{
-		std::ranges::sort(begin(fields), end(fields), [](auto	pair1, auto pair2)->bool
+		std::ranges::sort(fields, [](auto	pair1, auto pair2)->bool
 		{
 			return pair1.first<pair2.first;
 		});
@@ -127,7 +128,6 @@ public:
 				dataFile.read(reinterpret_cast<char*> (&key), sizeof(key));
 				value=std::string(databaseConfiguration::dataFieldNumberSymbols, '\0');
 				dataFile.read(value.data(), databaseConfiguration::dataFieldNumberSymbols);
-
 				if(value[0]!='\0')
 				{
 					std::cout<<"key: "<<j<<" "<<key<<" value: "<<value<< std::endl;
@@ -136,7 +136,6 @@ public:
 				{
 					break;
 				}
-				
 			}
 			auto overflowFields = getOverflowArea();
 			if(!overflowFields.empty())
@@ -151,6 +150,7 @@ public:
 
 	static void generateDataFile()
 	{
+		//rework generation of the datafile!!!!
 		std::ofstream dataFile(databaseConfiguration::dataFileName, std::ios_base::binary|std::ios_base::ate);
 		int key;
 		std::string value;
@@ -168,6 +168,110 @@ public:
 			}
 		}
 		dataFile.close();
+	}
+
+	static void editValueInField(int key, std::string newValue)
+	{
+		fitStringToDataFile(newValue);
+		const int blockNumber = getNumberOfFittingBlock(key);
+		auto blockFields = readBlock(blockNumber);
+		const int indexInBlock = sharrSearch(blockFields, key);
+		if(indexInBlock>=0)
+		{
+			blockFields[indexInBlock].second=newValue;
+			writeBlock(blockNumber, blockFields);
+		}
+		else
+		{
+			auto overflowAreaFields = getOverflowArea();
+			const int indexInOverflowArea = sharrSearch(overflowAreaFields, key);
+			overflowAreaFields[indexInOverflowArea].second=newValue;
+			writeOverflowArea(overflowAreaFields);
+		}
+	}
+
+	static void deleteFieldByKey(int key)
+	{
+		const int blockNumber = getNumberOfFittingBlock(key);
+		auto blockFields = readBlock(blockNumber);
+		const int indexInBlock = sharrSearch(blockFields, key);
+		if(indexInBlock>=0)
+		{
+			erase(blockFields, indexInBlock);
+			writeBlock(blockNumber, blockFields);
+		}
+		else
+		{
+			auto overflowAreaFields = getOverflowArea();
+			const int indexInOverflowArea = sharrSearch(overflowAreaFields, key);
+			erase(overflowAreaFields, indexInOverflowArea);
+			writeOverflowArea(overflowAreaFields);
+		}
+	}
+
+	static void writeOverflowArea(const std::vector<std::pair<int, std::string>>& fields)
+	{
+		writeBlock(databaseConfiguration::blocksNumber, fields);
+	}
+
+	static int sharrSearch(const std::vector<std::pair<int, std::string>>& fields, int key)
+	{
+		int k1;
+		int k=std::log2(fields.size());
+		
+		// return -1 if field with such key is not found!
+		////////////
+	}
+	static bool addNewFiield(int key, std::string value)
+	{
+		fitStringToDataFile(value);
+		const int blockNumber = getNumberOfFittingBlock(key);
+		auto blockFields = readBlock(blockNumber);
+		if(elementWithKeyExists(blockFields, key))
+			return false;
+		if((blockFields.size()>=databaseConfiguration::blockFieldsNumber)||(blockNumber<0))
+		{
+			writeFieldToOverflowArea(key, value);
+		}
+		else
+		{
+			blockFields.emplace_back(key, value);
+			sortBlock(blockFields);
+			writeBlock(blockNumber, blockFields);
+		}
+		return true;
+	}
+	static void writeFieldToOverflowArea(int key, const std::string value)
+	{
+		std::ofstream dataFile(databaseConfiguration::dataFileName, std::ios_base::binary|std::ios_base::app);
+		dataFile.write(reinterpret_cast<char*> (&key), sizeof(key));
+		dataFile.write(value.data(), databaseConfiguration::dataFieldNumberSymbols);
+		dataFile.close();
+	}
+
+	static bool elementWithKeyExists(const std::vector<std::pair<int, std::string>>& fields, int key)
+	{
+		const int indexOfElementWithKey = sharrSearch(fields, key);
+		if(indexOfElementWithKey>=0)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	static void fitStringToDataFile(std::string& value)
+	{
+		if(value.size()>=databaseConfiguration::dataFieldNumberSymbols)
+		{
+			value=value.substr(0, databaseConfiguration::dataFieldNumberSymbols);
+		}
+		else
+		{
+			value+= std::string(databaseConfiguration::dataFieldNumberSymbols-value.size(), '\0');
+		}
 	}
 };
 
