@@ -11,54 +11,55 @@ int search::sharrMethod(const std::vector<std::pair<int, std::string>>& fields, 
     }
 	int N = fields.size();
 	int k=log2(N);
-	int i=pow(2, k);
-	int Ki = fields[i].first;
+	int pos=pow(2, k);
+	int Ki = fields[pos-1].first;
 	int K = key;
 	if(K==Ki)
 	{
-		return i;
+		return pos-1;
+	}
+	if(K>Ki)
+	{
+		int l = floor(log2(N-pow(2, k)+1));
+		pos=N+1-pow(2, l);
+		return homogeneousBinarySearch(key, fields, pos, k, comparisonsNumber);
 	}
 	if(K<Ki)
 	{
-		int delta = pow(2, k-1);
-		i=i-(delta/2+1);
-		return homogeneousBinarySearch(i, delta, fields,key, comparisonsNumber);
+		return homogeneousBinarySearch(key, fields, pos, k, comparisonsNumber);
 	}
-	int l = log2(N-pow(2, k)+1);
-	i=N+1-pow(2, l);
-	int delta = pow(2, l-1);
-	return homogeneousBinarySearch(i, delta, fields,key, comparisonsNumber); 
+	 
 }
 
-int search::homogeneousBinarySearch(int i, int delta, const std::vector<std::pair<int, std::string>>& fields, int key, int& comparisonsNumber)
+int search::homogeneousBinarySearch(int key, const std::vector<std::pair<int, std::string>>& fields, int pos, int k, int& comparisonsNumber)
 {
 	comparisonsNumber++;
+	if((pos-1<0)||(pos-1>fields.size()))
+	{
+		return -1;
+	}
 	int Ki = 0;
-	if(i>fields.size())
+	if(pos==fields.size())
 	{
 		Ki=INT_MAX;
 	}
 	else
 	{
-		Ki = fields[i].first;
+		Ki = fields[pos-1].first;
 	}
+	
 	if(key==Ki)
 	{
-		return i;
-	}
-	if(delta == 0)
-	{
-		return -1;
+		return pos-1;
 	}
 	if(key<Ki)
 	{
-		i=i-(delta/2+1);
-		delta=delta/2;
-		return homogeneousBinarySearch(i, delta, fields,key, comparisonsNumber);
+		k--;
+		pos -= static_cast<int>(pow(2, k))/2 + 1;
+		return homogeneousBinarySearch(key, fields,pos, k, comparisonsNumber);
 	}
-	i=i+(delta/2+1);
-	delta=delta/2;
-	return homogeneousBinarySearch(i, delta, fields,key, comparisonsNumber);
+	pos += static_cast<int>(pow(2, k))/2 + 1;
+	return homogeneousBinarySearch(key, fields,pos, k, comparisonsNumber);	
 }
 
 bool search::elementWithKeyExists(const std::vector<std::pair<int, std::string>>& fields, int key, int& comparisonsNumber)
