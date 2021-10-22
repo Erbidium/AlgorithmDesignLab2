@@ -140,13 +140,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="database.cpp" />
+    <ClCompile Include="block.cpp" />
+    <ClCompile Include="dataFile.cpp" />
+    <ClCompile Include="field.cpp" />
+    <ClCompile Include="indexFile.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="databaseConfiguration.cpp" />
+    <ClCompile Include="overflowArea.cpp" />
+    <ClCompile Include="search.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="database.h" />
+    <ClInclude Include="block.h" />
     <ClInclude Include="databaseConfiguration.h" />
+    <ClInclude Include="dataFile.h" />
+    <ClInclude Include="field.h" />
+    <ClInclude Include="indexFile.h" />
+    <ClInclude Include="overflowArea.h" />
+    <ClInclude Include="search.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
