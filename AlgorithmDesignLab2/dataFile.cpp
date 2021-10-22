@@ -2,6 +2,7 @@
 
 #include "databaseConfiguration.h"
 #include "overflowArea.h"
+#include "block.h"
 
 #include <iostream>
 #include <fstream>
@@ -16,36 +17,11 @@ void dataFile::create()
 
 void dataFile::print()
 {
-	std::ifstream dataFile(databaseConfiguration::dataFileName, std::ios_base::binary);
-	int key;
-	std::string value;
 	for(int i=0;i<databaseConfiguration::blocksNumber;i++)
 	{
-		std::cout<<"Block number: "<<i<< std::endl;
-		dataFile.seekg(i*databaseConfiguration::blockSizeInBytes);
-		for(int j=0;j<databaseConfiguration::blockFieldsNumber;j++)
-		{
-			dataFile.read(reinterpret_cast<char*> (&key), sizeof(key));
-			value=std::string(databaseConfiguration::dataFieldNumberSymbols, '\0');
-			dataFile.read(value.data(), databaseConfiguration::dataFieldNumberSymbols);
-			if(value[0]!='\0')
-			{
-				std::cout<<"key: "<<j<<" "<<key<<" value: "<<value<< std::endl;
-			}
-			else
-			{
-				break;
-			}
-		}
-		auto overflowFields = overflowArea::read();
-		if(!overflowFields.empty())
-			std::cout<<"Overflow area"<< std::endl;
-		for (auto overflowField : overflowFields)
-		{
-			std::cout<<"key: "<<key<<" value: "<<value<< std::endl;
-		}
+		block::print(i);
 	}
-	dataFile.close();
+	overflowArea::print();
 }
 
 void dataFile::generate(int numberOfWrittenFieldsInBlock, int numberOfFieldsInOverflowArea)
@@ -63,9 +39,7 @@ void dataFile::generate(int numberOfWrittenFieldsInBlock, int numberOfFieldsInOv
 		for(int j=0;j<numberOfWrittenFieldsInBlock;j++)
 		{
 			key = databaseConfiguration::blockFieldsNumber*i+j;
-			value=std::string(databaseConfiguration::dataFieldNumberSymbols, '\0');
-			std::string newValue = randomStringForField();
-			value.replace(0, value.size(), newValue);
+			value = randomStringForField();
 			dataFile.write(reinterpret_cast<char*> (&key), sizeof(key));
 			dataFile.write(value.data(), databaseConfiguration::dataFieldNumberSymbols);
 		}
@@ -80,7 +54,7 @@ void dataFile::generate(int numberOfWrittenFieldsInBlock, int numberOfFieldsInOv
 		fields[i].second=value;
 		currentKeyInOverflow+=2+rand()%7;
 	}
-	//overflowArea::write(fields);
+	overflowArea::write(fields);
 }
 
 void dataFile::fitString(std::string& value)

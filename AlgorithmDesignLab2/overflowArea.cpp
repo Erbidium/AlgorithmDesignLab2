@@ -1,5 +1,7 @@
 ﻿#include "overflowArea.h"
 
+#include <iostream>
+
 #include "block.h"
 #include "databaseConfiguration.h"
 
@@ -29,10 +31,13 @@ void overflowArea::write(std::vector<std::pair<int, std::string>>& fields)
 	block::write(databaseConfiguration::blocksNumber, fields);
 }
 
-void overflowArea::addNewField(int key, std::string value)
+void overflowArea::print()
 {
-	std::ofstream dataFile(databaseConfiguration::dataFileName, std::ios_base::binary|std::ios_base::app);
-	dataFile.write(reinterpret_cast<char*> (&key), sizeof(key));
-	dataFile.write(value.data(), databaseConfiguration::dataFieldNumberSymbols);
-	dataFile.close();
+	auto overflowFields = read();
+	if(!overflowFields.empty())
+		std::cout<<"Overflow area"<< std::endl;
+	for (auto overflowField : overflowFields)
+	{
+		std::cout<<"key: "<<overflowField.first<<" value: "<<overflowField.second<< std::endl;
+	}
 }

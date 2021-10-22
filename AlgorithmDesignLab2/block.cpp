@@ -1,4 +1,4 @@
-﻿#include "block.h"
+#include "block.h"
 
 #include <algorithm>
 #include <fstream>
@@ -39,7 +39,7 @@ void block::print(int blockNumber)
 
 void block::write(int blockNumber, std::vector<std::pair<int, std::string>>& fields)
 {
-	std::ofstream dataFile(databaseConfiguration::dataFileName, std::ios_base::binary| std::ios_base::out);
+	std::ofstream dataFile(databaseConfiguration::dataFileName, std::ios_base::binary| std::ios_base::out|std::ios_base::in);
 	dataFile.seekp(blockNumber*databaseConfiguration::blockSizeInBytes);
 	for (const auto& field : fields)
 	{
