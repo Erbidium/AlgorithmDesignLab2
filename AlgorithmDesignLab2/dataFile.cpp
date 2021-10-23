@@ -71,7 +71,7 @@ void dataFile::fitString(std::string& value)
 
 std::string dataFile::randomStringForField()
 {
-	int length=rand()%10+rand()%(databaseConfiguration::dataFieldNumberSymbols-10);
+	int length=1+rand()%10+rand()%(databaseConfiguration::dataFieldNumberSymbols-11);
 	std::string value(databaseConfiguration::dataFieldNumberSymbols, '\0');
 	for(int i=0;i<length;i++)
 	{
