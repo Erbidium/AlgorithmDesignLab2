@@ -1,4 +1,4 @@
-﻿#include "search.h"
+#include "search.h"
 #include <vector>
 #include <cmath>
 
@@ -22,7 +22,7 @@ int search::sharrMethod(const std::vector<std::pair<int, std::string>>& fields, 
 	{
 		int l = floor(log2(N-pow(2, k)+1));
 		pos=N+1-pow(2, l);
-		return homogeneousBinarySearch(key, fields, pos, k, comparisonsNumber);
+		return homogeneousBinarySearch(key, fields, pos, l, comparisonsNumber);
 	}
 	if(K<Ki)
 	{
@@ -38,8 +38,12 @@ int search::homogeneousBinarySearch(int key, const std::vector<std::pair<int, st
 	{
 		return -1;
 	}
+	if(((fields[pos-1].first<key)&&(pos<=fields.size())&&(fields[pos].first>key))||((fields[pos-1].first>key)&&(pos-2>=0)&&(fields[pos-2].first<key)))
+	{
+		return -1;
+	}
 	int Ki = 0;
-	if(pos==fields.size())
+	if(pos-1==fields.size())
 	{
 		Ki=INT_MAX;
 	}
@@ -58,6 +62,7 @@ int search::homogeneousBinarySearch(int key, const std::vector<std::pair<int, st
 		pos -= static_cast<int>(pow(2, k))/2 + 1;
 		return homogeneousBinarySearch(key, fields,pos, k, comparisonsNumber);
 	}
+	k--;
 	pos += static_cast<int>(pow(2, k))/2 + 1;
 	return homogeneousBinarySearch(key, fields,pos, k, comparisonsNumber);	
 }
