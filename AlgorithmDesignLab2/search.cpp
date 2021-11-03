@@ -38,7 +38,7 @@ int search::homogeneousBinarySearch(int key, const std::vector<std::pair<int, st
 	{
 		return -1;
 	}
-	if(((fields[pos-1].first<key)&&(pos<=fields.size())&&(fields[pos].first>key))||((fields[pos-1].first>key)&&(pos-2>=0)&&(fields[pos-2].first<key)))
+	if((pos-1<fields.size())&&(((fields[pos-1].first<key)&&(pos<fields.size())&&(fields[pos].first>key))||((fields[pos-1].first>key)&&(pos-2>=0)&&(fields[pos-2].first<key))||((pos-1==fields.size()-1)&&(fields[pos-1].first<key))))
 	{
 		return -1;
 	}
